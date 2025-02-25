@@ -11,12 +11,15 @@
 <body>
     <script type="module">
         import * as THREE from "https://web.cs.manchester.ac.uk/three/three.js-master/build/three.module.js";
+        import { OrbitControls } from "https://web.cs.manchester.ac.uk/three/three.js-master/examples/jsm/controls/OrbitControls.js";
 
         let scene, camera, renderer;
 
         let sunGeometry, sunMaterial, sunMesh, earthGeometry, earthMaterial, earthMesh, moonGeometry, moonMaterial, moonMesh;
 
-        let earthSystem;
+        let earthSystem, orbitRadius = 50, curve;
+
+        let controls;
 
         const init = () => {
             scene = new THREE.Scene();
@@ -31,12 +34,19 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
+            // allows you to move viewpoint by clicking and dragging
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.autoRotate = true;
+
+            const loader = new THREE.TextureLoader();
+
             // geometry includes radius, number of horizontal segments and number of vertical segments
+            //const sunTexture = loader.load('https://www.solarsystemscope.com/textures/download/2k_sun.jpg');
             sunGeometry = new THREE.SphereGeometry(109, 400, 200);
             sunMaterial = new THREE.MeshStandardMaterial(
                 {
                     emissive: 0xffd700,
-                    // emissiveMap: texture,
+                    //emissiveMap: sunTexture,
                     emissiveIntensity: 1,
                     wireframe: false
                 }
@@ -76,17 +86,54 @@
             earthSystem = new THREE.Group();
             earthSystem.add(earthMesh);
             earthSystem.add(moonMesh);
-            moonMesh.position.set(50, 0, 0); // sets position of the moon relative to this earth-moon system
+            moonMesh.position.set(orbitRadius, 0, 0); // sets position of the moon relative to this earth-moon system
             
             // Add Earth-Moon system to the scene
             scene.add(earthSystem);
 
+            // constructor sets x,y coordinates of the centre, the radius in the x,y direction and
+            // the start/end angles for drawing the ellipse
+            curve = new THREE.EllipseCurve(0, 0, 10, 10, 0, 2 * Math.PI);
+            const line = curve.getPoints(50); // generates 50 evenly spaced points along the curve
+            const geometry = new THREE.BufferGeometry().setFromPoints(line);
+
+            const material = new THREE.LineBasicMaterial(
+                {
+                    color: 0xff0000 
+                } 
+            );
+
+            const ellipse = new THREE.Line(geometry, material);
+
+            // rotate the orbit to lie in the XZ plane
+            ellipse.rotation.x = Math.PI / 2; // rotate 90 degrees around the X-axis
+
+            scene.add(ellipse);
+
             const earthOrbitRadius = 200;
             const w = 0.001;
-            const time = performance.now() / 100000;
+            const t = performance.now() * 0.00001;
 
-            earthSystem.position.x = earthOrbitRadius * Math.sin(2 * Math.PI * w * time);
-            earthSystem.position.y = earthOrbitRadius * Math.cos(2 * Math.PI * w * time);
+            earthSystem.position.x = earthOrbitRadius * Math.sin(2 * Math.PI * w * t);
+            earthSystem.position.z = earthOrbitRadius * Math.cos(2 * Math.PI * w * t);
+
+            animate();
+        }
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            let time = performance.now() * 0.00001;
+            let t = time % 1;
+
+            const point = curve.getPoint(t);
+
+            earthSystem.position.x = point.x;
+            earthSystem.position.y = point.y;
+
+            let moonSpeed = 3;
+            moonMesh.position.x = orbitRadius * Math.cos(time * moonSpeed);
+            moonMesh.position.y = orbitRadius * Math.sin(time * moonSpeed);
 
             renderer.render(scene, camera);
         }
