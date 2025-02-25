@@ -16,9 +16,12 @@
 
         let sunGeometry, sunMaterial, sunMesh, earthGeometry, earthMaterial, earthMesh, moonGeometry, moonMaterial, moonMesh;
 
+        let earthSystem;
+
         const init = () => {
             scene = new THREE.Scene();
 
+            // last 2 arguments set the near and far plane
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
             camera.position.x = 0;
             camera.position.y = 30;
@@ -28,10 +31,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            const light = new THREE.PointLight(0xff0000, 2, 1000);
-            light.position.set(0, 0, 0);
-            scene.add(light);
-
+            // geometry includes radius, number of horizontal segments and number of vertical segments
             sunGeometry = new THREE.SphereGeometry(109, 400, 200);
             sunMaterial = new THREE.MeshStandardMaterial(
                 {
@@ -43,6 +43,52 @@
             );
             sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
             scene.add(sunMesh);
+
+            // sets colour, intensity and range of the light
+            const light = new THREE.PointLight(0xffffff, 2, 2000);
+            light.position.set(0, 0, 0); // centred at the sun
+            scene.add(light);
+
+            const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
+            scene.add(ambientLight);
+
+            earthGeometry = new THREE.SphereGeometry(25, 50, 50);
+            earthMaterial = new THREE.MeshPhongMaterial(
+                {
+                    // map: texture,
+                    color: 0x0000ff
+                }
+            );
+            earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
+            scene.add(earthMesh);
+
+            moonGeometry = new THREE.SphereGeometry(5, 40, 20);
+            moonMaterial = new THREE.MeshPhongMaterial(
+                {
+                    // map: texture,
+                    color: 0x0000ff
+                }
+            );
+            moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
+            scene.add(moonMesh);
+
+            // group object that groups together the earth and the moon
+            earthSystem = new THREE.Group();
+            earthSystem.add(earthMesh);
+            earthSystem.add(moonMesh);
+            moonMesh.position.set(50, 0, 0); // sets position of the moon relative to this earth-moon system
+            
+            // Add Earth-Moon system to the scene
+            scene.add(earthSystem);
+
+            const earthOrbitRadius = 200;
+            const w = 0.001;
+            const time = performance.now() / 100000;
+
+            earthSystem.position.x = earthOrbitRadius * Math.sin(2 * Math.PI * w * time);
+            earthSystem.position.y = earthOrbitRadius * Math.cos(2 * Math.PI * w * time);
+
+            renderer.render(scene, camera);
         }
 
         init();
