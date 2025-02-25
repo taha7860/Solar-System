@@ -41,12 +41,12 @@
             const loader = new THREE.TextureLoader();
 
             // geometry includes radius, number of horizontal segments and number of vertical segments
-            //const sunTexture = loader.load('https://www.solarsystemscope.com/textures/download/2k_sun.jpg');
+            const sunTexture = loader.load('./assets/sun.jpg');
             sunGeometry = new THREE.SphereGeometry(109, 400, 200);
             sunMaterial = new THREE.MeshStandardMaterial(
                 {
                     emissive: 0xffd700,
-                    //emissiveMap: sunTexture,
+                    emissiveMap: sunTexture,
                     emissiveIntensity: 1,
                     wireframe: false
                 }
@@ -62,21 +62,21 @@
             const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
             scene.add(ambientLight);
 
+            const earthTexture = loader.load('./assets/earth.jpg');
             earthGeometry = new THREE.SphereGeometry(25, 50, 50);
             earthMaterial = new THREE.MeshPhongMaterial(
                 {
-                    // map: texture,
-                    color: 0x0000ff
+                    map: earthTexture
                 }
             );
             earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
             scene.add(earthMesh);
 
+            const moonTexture = loader.load('./assets/moon.jpg');
             moonGeometry = new THREE.SphereGeometry(5, 40, 20);
             moonMaterial = new THREE.MeshPhongMaterial(
                 {
-                    // map: texture,
-                    color: 0x0000ff
+                    map: moonTexture
                 }
             );
             moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
@@ -115,7 +115,7 @@
             const t = performance.now() * 0.00001;
 
             earthSystem.position.x = earthOrbitRadius * Math.sin(2 * Math.PI * w * t);
-            earthSystem.position.z = earthOrbitRadius * Math.cos(2 * Math.PI * w * t);
+            earthSystem.position.y = earthOrbitRadius * Math.cos(2 * Math.PI * w * t);
 
             animate();
         }
