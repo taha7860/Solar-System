@@ -15,9 +15,10 @@
 
         let scene, camera, renderer;
 
-        let sunGeometry, sunMaterial, sunMesh, earthGeometry, earthMaterial, earthMesh, moonGeometry, moonMaterial, moonMesh;
+        let sunGeometry, sunMaterial, sunMesh, earthGeometry, earthMaterial, earthMesh, moonGeometry, moonMaterial, moonMesh,
+            cloudGeometry, cloudMaterial, cloudMesh, galaxyGeometry, galaxyMaterial, galaxyMesh;
 
-        let earthSystem, orbitRadius = 50, curve;
+        let earthSystem, orbitRadius = 40, curve;
 
         let controls;
 
@@ -72,7 +73,19 @@
             earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
             scene.add(earthMesh);
 
-            const moonTexture = loader.load('./assets/moon.jpg');
+            const cloudTexture = loader.load('./assets/cloud.jpg');
+            cloudGeometry = new THREE.SphereGeometry(26, 50, 50);
+            cloudMaterial = new THREE.MeshPhongMaterial(
+                {
+                    map: cloudTexture,
+                    transparent: true,
+                    opacity: 0.55
+                }
+            );
+            cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
+            scene.add(cloudMesh);
+
+            const moonTexture = loader.load('./assets/moon.jpg')
             moonGeometry = new THREE.SphereGeometry(5, 40, 20);
             moonMaterial = new THREE.MeshPhongMaterial(
                 {
@@ -82,10 +95,23 @@
             moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
             scene.add(moonMesh);
 
+            // background
+            const galaxyTexture = loader.load('./assets/milky_way.jpg');
+            galaxyGeometry = new THREE.SphereGeometry(1000, 1000, 1000);
+            galaxyMaterial = new THREE.MeshStandardMaterial(
+                {
+                    map: galaxyTexture,
+                    side: THREE.DoubleSide
+                }
+            );
+            galaxyMesh = new THREE.Mesh(galaxyGeometry, galaxyMaterial);
+            scene.add(galaxyMesh);
+
             // group object that groups together the earth and the moon
             earthSystem = new THREE.Group();
             earthSystem.add(earthMesh);
             earthSystem.add(moonMesh);
+            earthSystem.add(cloudMesh);
             moonMesh.position.set(orbitRadius, 0, 0); // sets position of the moon relative to this earth-moon system
             
             // Add Earth-Moon system to the scene
@@ -93,17 +119,17 @@
 
             // constructor sets x,y coordinates of the centre, the radius in the x,y direction and
             // the start/end angles for drawing the ellipse
-            curve = new THREE.EllipseCurve(0, 0, 10, 10, 0, 2 * Math.PI);
+            curve = new THREE.EllipseCurve(0, 0, 200, 150, 0, 2 * Math.PI);
             const line = curve.getPoints(50); // generates 50 evenly spaced points along the curve
-            const geometry = new THREE.BufferGeometry().setFromPoints(line);
+            const lineGeometry = new THREE.BufferGeometry().setFromPoints(line);
 
-            const material = new THREE.LineBasicMaterial(
+            const lineMaterial = new THREE.LineBasicMaterial(
                 {
                     color: 0xff0000 
                 } 
             );
 
-            const ellipse = new THREE.Line(geometry, material);
+            const ellipse = new THREE.Line(lineGeometry, lineMaterial);
 
             // rotate the orbit to lie in the XZ plane
             ellipse.rotation.x = Math.PI / 2; // rotate 90 degrees around the X-axis
@@ -115,25 +141,30 @@
             const t = performance.now() * 0.00001;
 
             earthSystem.position.x = earthOrbitRadius * Math.sin(2 * Math.PI * w * t);
-            earthSystem.position.y = earthOrbitRadius * Math.cos(2 * Math.PI * w * t);
+            earthSystem.position.z = earthOrbitRadius * Math.cos(2 * Math.PI * w * t);
 
             animate();
         }
 
         const animate = () => {
-            requestAnimationFrame(animate);
+            requestAnimationFrame(animate); // continuously calls itself for smooth animation
 
-            let time = performance.now() * 0.00001;
+            let time = performance.now() * 0.0001;
             let t = time % 1;
 
             const point = curve.getPoint(t);
 
             earthSystem.position.x = point.x;
-            earthSystem.position.y = point.y;
+            earthSystem.position.z = point.y;
 
             let moonSpeed = 3;
             moonMesh.position.x = orbitRadius * Math.cos(time * moonSpeed);
-            moonMesh.position.y = orbitRadius * Math.sin(time * moonSpeed);
+            moonMesh.position.z = orbitRadius * Math.sin(time * moonSpeed);
+
+            sunMesh.rotation.y += 0.002;
+            cloudMesh.rotation.y += 0.015;
+            earthMesh.rotation.y += 0.02;
+            moonMesh.rotation.y += 0.05;
 
             renderer.render(scene, camera);
         }
