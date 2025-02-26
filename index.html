@@ -97,7 +97,7 @@
 
             // background
             const galaxyTexture = loader.load('./assets/milky_way.jpg');
-            galaxyGeometry = new THREE.SphereGeometry(4000, 64, 64);
+            galaxyGeometry = new THREE.SphereGeometry(5000, 64, 64);
             galaxyMaterial = new THREE.MeshBasicMaterial(
                 {
                     map: galaxyTexture,
@@ -136,13 +136,6 @@
 
             scene.add(ellipse);
 
-            const earthOrbitRadius = 200;
-            const w = 0.001;
-            const t = performance.now() * 0.00001;
-
-            earthSystem.position.x = earthOrbitRadius * Math.sin(2 * Math.PI * w * t);
-            earthSystem.position.z = earthOrbitRadius * Math.cos(2 * Math.PI * w * t);
-
             animate();
         }
 
@@ -157,14 +150,14 @@
             earthSystem.position.x = point.x;
             earthSystem.position.z = point.y;
 
-            let moonSpeed = 3;
-            moonMesh.position.x = earthMesh.position.x + orbitRadius * Math.cos(time * moonSpeed);
-            moonMesh.position.z = earthMesh.position.z + orbitRadius * Math.sin(time * moonSpeed);
+            let moonSpeed = 30;
+            moonMesh.position.x = orbitRadius * Math.cos(time * moonSpeed);
+            moonMesh.position.z = orbitRadius * Math.sin(time * moonSpeed);
 
             sunMesh.rotation.y += 0.002;
             cloudMesh.rotation.y += 0.01;
             earthMesh.rotation.y += 0.02;
-            moonMesh.rotation.y += 0.05;
+            moonMesh.rotation.y += 0.0005;
 
             renderer.render(scene, camera);
         }
