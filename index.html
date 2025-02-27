@@ -119,7 +119,7 @@
 
             // constructor sets x,y coordinates of the centre, the radius in the x,y direction and
             // the start/end angles for drawing the ellipse
-            curve = new THREE.EllipseCurve(0, 0, 200, 150, 0, 2 * Math.PI);
+            curve = new THREE.EllipseCurve(0, 0, 350, 250, 0, 2 * Math.PI);
             const line = curve.getPoints(50); // generates 50 evenly spaced points along the curve
             const lineGeometry = new THREE.BufferGeometry().setFromPoints(line);
 
